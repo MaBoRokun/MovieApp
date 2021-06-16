@@ -21,11 +21,19 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 public class MovieApiClient {
-    private MutableLiveData<List<MovieModel>> mMovies;
+
 
     private static MovieApiClient instance;
 
+    private MutableLiveData<List<MovieModel>> mMovies;
     private RetrieveMoviesRunnable retrieveMoviesRunnable;
+
+
+    private MutableLiveData<List<MovieModel>> mMoviesPopular;
+    private RetrieveMoviesRunnablePopular retrieveMoviesPopular;
+
+
+
 
     public static MovieApiClient getInstance(){
         if(instance==null){
@@ -36,10 +44,15 @@ public class MovieApiClient {
 
     private MovieApiClient(){
         mMovies=new MutableLiveData<>();
+        mMoviesPopular=new MutableLiveData<>();
     }
 
     public LiveData<List<MovieModel>> getMovies(){
         return mMovies;
+    }
+
+    public LiveData<List<MovieModel>> getPopularMovies(){
+        return mMoviesPopular;
     }
 
     public void searchMoviesApi(String query,int pageNumber){
@@ -55,7 +68,23 @@ public class MovieApiClient {
             public void run() {
             myHandler.cancel(true);
             }
-        },4000, TimeUnit.MICROSECONDS);
+        },4000, TimeUnit.MILLISECONDS);
+    }
+
+    public void searchPopularMovies(int pageNumber){
+        if(retrieveMoviesPopular!=null){
+            retrieveMoviesPopular=null;
+        }
+        retrieveMoviesPopular =  new RetrieveMoviesRunnablePopular(pageNumber);
+
+        final Future myHandler2 = AppExecutors.getInstance().netWorkIO().submit(retrieveMoviesPopular);
+
+        AppExecutors.getInstance().netWorkIO().schedule(new Runnable() {
+            @Override
+            public void run() {
+                myHandler2.cancel(true);
+            }
+        },4000, TimeUnit.MILLISECONDS);
     }
 
     private class RetrieveMoviesRunnable implements Runnable{
@@ -95,6 +124,7 @@ public class MovieApiClient {
                 }
             }catch (IOException e){
                 e.printStackTrace();
+                mMovies.postValue(null);
             }
 
 
@@ -103,7 +133,63 @@ public class MovieApiClient {
         private Call<MovieSearchResponse> getMovies(String query,int pageNumber){
             return Servicy.getInstance().getJSONApi().searchMovie(
                     Credentials.API_KEY,
-                    query
+                    query,
+                    String.valueOf(pageNumber)
+            );
+        }
+        private void cancelRequest(){
+            Log.v("Tag","Cancelling Search Request");
+            cancelRequest=true;
+        }
+
+
+    }
+
+    private class RetrieveMoviesRunnablePopular implements Runnable{
+
+        private int pageNumber;
+        boolean cancelRequest;
+
+        public RetrieveMoviesRunnablePopular(int pageNumber) {
+            this.pageNumber = pageNumber;
+            cancelRequest=false;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Response response = getPopular(pageNumber).execute();
+                if (cancelRequest) {
+                    return;
+                }
+                if (response.code() == 200) {
+                    List<MovieModel> list = new ArrayList<>(((MovieSearchResponse) response.body()).getMovies());
+                    if (pageNumber == 1) {
+                        mMoviesPopular.postValue(list);
+                    }
+                    else {
+                        List<MovieModel> currentMovies = mMoviesPopular.getValue();
+                        currentMovies.addAll(list);
+                        mMoviesPopular.postValue(currentMovies);
+                    }
+
+                }else{
+                    String error = response.errorBody().string();
+                    Log.v("Tag", "Error code " + error);
+                    mMoviesPopular.postValue(null);
+                }
+            }catch (IOException e){
+                e.printStackTrace();
+                mMoviesPopular.postValue(null);
+            }
+
+
+        }
+
+        private Call<MovieSearchResponse> getPopular(int pageNumber){
+            return Servicy.getInstance().getJSONApi().getPopular(
+                    Credentials.API_KEY,
+                    String.valueOf(pageNumber)
             );
         }
         private void cancelRequest(){

@@ -13,12 +13,19 @@ public interface MovieApi {
     @GET("/3/search/movie")
     Call<MovieSearchResponse> searchMovie
             (@Query("api_key") String key,
-             @Query("query")String query);
+             @Query("query")String query,
+             @Query("page")String page);
 
     //Movie by ID
     @GET("/3/movie/{movie_id}")
     Call<MovieModel> getMovie(
             @Path("movie_id") int movie_id,
             @Query("api_key") String api_key
+    );
+
+    @GET("/3/movie/popular")
+    Call<MovieSearchResponse> getPopular(
+            @Query("api_key") String key,
+            @Query("page")String page
     );
 }

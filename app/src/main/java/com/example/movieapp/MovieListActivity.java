@@ -1,20 +1,34 @@
 package com.example.movieapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
+
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.movieapp.adapter.MovieRecycleView;
+import com.example.movieapp.adapter.OnMovieListener;
 import com.example.movieapp.models.MovieModel;
 import com.example.movieapp.request.Servicy;
 import com.example.movieapp.response.MovieSearchResponse;
 import com.example.movieapp.utils.Credentials;
 import com.example.movieapp.utils.MovieApi;
 import com.example.movieapp.viewmodels.MovieListViewModel;
+import com.google.android.material.checkbox.MaterialCheckBox;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,59 +39,143 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class MovieListActivity extends AppCompatActivity {
-Button btn;
+public class MovieListActivity extends AppCompatActivity implements OnMovieListener {
 private MovieListViewModel movieList;
+private RecyclerView recyclerView;
+private MovieRecycleView movieRecycleAdapter;
+private CheckBox adult;
+
+boolean isPopular =true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btn=findViewById(R.id.button);
+        Toolbar toolbar= findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        SetupSearchView();
+
+        recyclerView=findViewById(R.id.recyclerView);
 
         movieList= new ViewModelProvider(this).get(MovieListViewModel.class);
 
-        btn.setOnClickListener(new View.OnClickListener() {
+        cfg_recycle();
+        ObserverAnyChanges();
+
+        ObserverPopularMovies();
+        movieList.searchMoviePopular(1);
+
+        adult=findViewById(R.id.adult);
+
+        adult.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                test();
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                
+            }
+        });
+
+    }
+
+
+
+    private void ObserverPopularMovies() {
+        movieList.getPopularMovies().observe(this, new Observer<List<MovieModel>>() {
+            @Override
+            public void onChanged(List<MovieModel> movieModels) {
+                if(movieModels !=null){
+                    for(MovieModel movieModel: movieModels){
+
+                        movieRecycleAdapter.setmMovies(movieModels);
+
+                    }
+                }
             }
         });
     }
+
 
     private void ObserverAnyChanges(){
         movieList.getMovies().observe(this, new Observer<List<MovieModel>>() {
             @Override
             public void onChanged(List<MovieModel> movieModels) {
+                if(movieModels !=null){
+                    for(MovieModel movieModel: movieModels){
 
-            }
-        });
-    }
+                        movieRecycleAdapter.setmMovies(movieModels);
 
-    private void test(){
-        Servicy.getInstance().getJSONApi().searchMovie(Credentials.API_KEY,
-                "Jack Reacher").enqueue(new Callback<MovieSearchResponse>() {
-            @Override
-            public void onResponse(Call<MovieSearchResponse> call, Response<MovieSearchResponse> response) {
-                if(response.code()==200){
-                    Log.v("Tag","the response" + response.body().toString());
-                    List<MovieModel> movieModelList = new ArrayList<>(response.body().getMovies());
-                    for(MovieModel movie: movieModelList){
-                        Log.v("Tag","Realse date" +movie.getRelease_date());
                     }
                 }
-                else{
-                    Log.v("Tag","Error " +response.errorBody().toString());
-                    Log.v("Tag","Error " +call.toString());
-                }
+            }
+        });
+    }
+
+
+
+    private void SetupSearchView() {
+        final SearchView searchView = findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                movieList.searchMovieApi(query,1);
+                isPopular=false;
+                return false;
             }
 
             @Override
-            public void onFailure(Call<MovieSearchResponse> call, Throwable t) {
+            public boolean onQueryTextChange(String newText) {
+                if(newText.equals("")){
+                    movieList.searchMoviePopular(1);
+                }
+                return false;
+            }
+        });
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
             }
         });
 
     }
 
+
+    private void cfg_recycle(){
+        movieRecycleAdapter = new MovieRecycleView(this);
+        recyclerView.setAdapter(movieRecycleAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this,
+                LinearLayoutManager.VERTICAL,false));
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if(!recyclerView.canScrollVertically(1)){
+                    if(isPopular){
+                        movieList.NextPopularPage();
+                    }else{
+                        movieList.SearchNextPage();
+                    }
+                }
+            }
+        });
+
+    }
+
+
+
+    @Override
+    public void onMovieClick(int position) {
+
+    Intent intent = new Intent(this,MovieDetailActivity.class);
+    intent.putExtra("movie",movieRecycleAdapter.getSelectedMovie(position));
+    startActivity(intent);
+
+    }
+
+    @Override
+    public void onCategoryClick(String category) {
+
+    }
 }
