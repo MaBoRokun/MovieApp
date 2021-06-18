@@ -16,16 +16,14 @@ public interface MovieApi {
              @Query("query")String query,
              @Query("page")String page);
 
-    //Movie by ID
-    @GET("/3/movie/{movie_id}")
-    Call<MovieModel> getMovie(
-            @Path("movie_id") int movie_id,
-            @Query("api_key") String api_key
-    );
-
     @GET("/3/movie/popular")
     Call<MovieSearchResponse> getPopular(
             @Query("api_key") String key,
             @Query("page")String page
+    );
+
+    @GET("/3/genre/movie/list")
+    Call<MovieSearchResponse> getGenreList(
+            @Query("api_key") String key
     );
 }

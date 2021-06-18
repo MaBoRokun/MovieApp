@@ -64,12 +64,16 @@ public class MovieRecycleView extends RecyclerView.Adapter<RecyclerView.ViewHold
         if(itemViewType == Display_Search){
             ((MovieViewHolder)holder).title.setText(mMovies.get(position).getTitle());
             ((MovieViewHolder)holder).ratingBar.setRating(mMovies.get(position).getVote_average()/2);
+            ((MovieViewHolder)holder).rating_value.setText(String.valueOf(mMovies.get(position).getVote_average()));
+            ((MovieViewHolder)holder).release_date.setText(mMovies.get(position).getRelease_date());
             Glide.with(holder.itemView.getContext())
                 .load(Credentials.IMAGE_PATH+mMovies.get(position).getPoster_path())
                 .into(((MovieViewHolder)holder).imageView);
 
         }else {
             ((PopularViewHolder)holder).title.setText(mMovies.get(position).getTitle());
+            ((PopularViewHolder)holder).rating_value.setText(String.valueOf(mMovies.get(position).getVote_average()));
+            ((PopularViewHolder)holder).duration.setText(mMovies.get(position).getRelease_date());
             ((PopularViewHolder)holder).ratingBar.setRating(mMovies.get(position).getVote_average()/2);
             Glide.with(holder.itemView.getContext())
                     .load(Credentials.IMAGE_PATH+mMovies.get(position).getPoster_path())

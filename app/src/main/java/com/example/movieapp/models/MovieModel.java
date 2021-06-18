@@ -76,9 +76,7 @@ public class MovieModel implements Parcelable {
         return movie_overview;
     }
 
-    public int getRuntime() {
-        return runtime;
-    }
+
 
     @Override
     public int describeContents() {
@@ -93,5 +91,9 @@ public class MovieModel implements Parcelable {
         dest.writeInt(movie_id);
         dest.writeFloat(vote_average);
         dest.writeString(movie_overview);
+    }
+
+    public int getRuntime() {
+        return runtime;
     }
 }
