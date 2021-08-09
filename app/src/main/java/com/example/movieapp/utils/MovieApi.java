@@ -1,14 +1,14 @@
 package com.example.movieapp.utils;
 
-import com.example.movieapp.models.MovieModel;
 import com.example.movieapp.response.MovieSearchResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
-import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface MovieApi {
+
+
     //Test response
     @GET("/3/search/movie")
     Call<MovieSearchResponse> searchMovie

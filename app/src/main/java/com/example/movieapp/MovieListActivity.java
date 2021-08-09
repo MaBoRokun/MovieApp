@@ -23,23 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.movieapp.adapter.MovieRecycleView;
 import com.example.movieapp.adapter.OnMovieListener;
 import com.example.movieapp.models.MovieModel;
-import com.example.movieapp.request.Servicy;
-import com.example.movieapp.response.MovieSearchResponse;
-import com.example.movieapp.utils.Credentials;
-import com.example.movieapp.utils.MovieApi;
 import com.example.movieapp.viewmodels.MovieListViewModel;
-import com.google.android.material.checkbox.MaterialCheckBox;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class MovieListActivity extends AppCompatActivity implements OnMovieListener {
@@ -58,6 +45,8 @@ boolean isPopular =true;
         Toolbar toolbar= findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+
         SetupSearchView();
 
         recyclerView=findViewById(R.id.recyclerView);
@@ -75,35 +64,10 @@ boolean isPopular =true;
         adult.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
             }
         });
 
     }
-
-//    private void GetGenreName(){
-//        JSONArray mJsonArray = new JSONArray(jsonStr);
-//        JSONObject mJsonObject = mJsonArray.getJSONObject(0);
-//
-//        String pmid = mJsonObject.getString("pmid");
-//        String name = mJsonObject.getString("name");
-//        String result = mJsonObject.getString("result");
-//
-//
-//        JSONArray mJsonArrayProperty = mJsonObject.getJSONArray("properties");
-//        for (int i = 0; i < mJsonArrayProperty.length(); i++) {
-//            JSONObject mJsonObjectProperty = mJsonArrayProperty.getJSONObject(i);
-//
-//            String prop_id = mJsonObjectProperty.getString("prop_id");
-//            String prop_name = mJsonObjectProperty.getString("prop_name");
-//            String address = mJsonObjectProperty.getString("address");
-//            String city = mJsonObjectProperty.getString("city");
-//            String state = mJsonObjectProperty.getString("state");
-//            String zip = mJsonObjectProperty.getString("zip");
-//            String lat = mJsonObjectProperty.getString("lat");
-//            String lon = mJsonObjectProperty.getString("long");
-//        }
-//    }
 
     private void ObserverPopularMovies() {
         movieList.getPopularMovies().observe(this, new Observer<List<MovieModel>>() {

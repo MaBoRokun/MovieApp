@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+
 public class MovieModel implements Parcelable {
     private String title;
     private String poster_path;
@@ -19,8 +20,9 @@ public class MovieModel implements Parcelable {
     @SerializedName("runtime")
     private int runtime;
 
+
     public MovieModel(String title, String poster_path, String release_date, int movie_id,
-                      float vote_average, String movie_overview,int runtime) {
+                      float vote_average, String movie_overview, int runtime) {
         this.title = title;
         this.poster_path = poster_path;
         this.release_date = release_date;
